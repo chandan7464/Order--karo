@@ -24,7 +24,7 @@ const validate = (fullname,mobile,email,password,role) => {
         errors.push({message: "Invalid Password"});
     }
     
-    if (!role || validRoles.includes(role.toLowerCase())) {
+    if (!role || !validRoles.includes(role.toLowerCase())) {
         errors.push({ message: "Invalid Role" });
     }
     

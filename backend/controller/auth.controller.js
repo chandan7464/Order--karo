@@ -78,7 +78,7 @@ export const login = async (req,res) => {
             })
 
             res.status(201).json({
-                message:"Login Successfully",
+                message: `${user.fullname}Login Successfully`,
                 user: {                        
                     id: user._id,
                     fullname: user.fullname,
@@ -87,6 +87,7 @@ export const login = async (req,res) => {
                 }
             });
         } catch (error) {
+            console.log("Error:",error);
             return res.status(500).json({message: "Internal Server Error"})
         }
 }
