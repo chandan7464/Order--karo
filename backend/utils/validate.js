@@ -2,7 +2,7 @@ import validator from "validator";
 
 const validate = (fullname,mobile,email,password,role) => {
     const errors = [];
-    const validRoles = ['user', 'admin', 'rider'];
+    const validRoles = ['user','owner' ,'admin', 'rider'];
 
     if(!fullname || fullname.trim().length < 2)
     {

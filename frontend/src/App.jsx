@@ -1,121 +1,98 @@
-import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from './assets/vite.svg'
-import heroImg from './assets/hero.png'
-import './App.css'
+import React from "react";
+import { Routes, Route, Navigate } from "react-router-dom";
+import { useSelector } from "react-redux";
 
-function App() {
-  const [count, setCount] = useState(0)
+// Auth Pages
+import Signup from "./pages/Signup";
+import Login from "./pages/Login";
+import ForgetPassword from "./pages/ForgetPassword";
+
+// App Pages
+import Home from "./pages/Home";
+
+// Shop Pages
+import MyShops from "./pages/shop/MyShops";
+import CreateShop from "./pages/shop/CreateShop";
+import EditShop from "./pages/shop/EditShop";
+import ShopDetails from "./pages/shop/ShopDetails";
+
+// Item Pages
+import CreateItem from "./pages/item/CreateItem";
+import EditItem from "./pages/item/EditItem";
+
+// Orders Page
+import Orders from "./pages/orders/Orders";
+
+// OrderHistory Page
+import OrderHistory from "./pages/orders/OrderHistory";
+
+// Outlet Page
+import HelpCenter from "./pages/outlet/HelpCenter";
+
+// Routes
+import PublicRoute from "./routes/PublicRoute";
+import ProtectedRoute from "./routes/ProtectedRoute";
+import OwnerRoute from "./routes/OwnerRoutes";
+
+// Hooks
+import useGetCurrentUser from "./hooks/useGetCurrentUser";
+import useGetCity from "./hooks/useGetCity";
+import useGetMyShop from "./hooks/useGetMyShop";
+
+import OwnerDashboard from "./components/OwnerDashboard";
+
+const App = () => {
+  useGetCurrentUser();
+  useGetCity();
+  useGetMyShop();
+  const loading = useSelector((state) => state.user.loading);
+
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <p className="text-orange-600 text-xl font-bold">Loading...</p>
+      </div>
+    );
+  }
 
   return (
-    <>
-      <section id="center">
-        <div className="hero">
-          <img src={heroImg} className="base" width="170" height="179" alt="" />
-          <img src={reactLogo} className="framework" alt="React logo" />
-          <img src={viteLogo} className="vite" alt="Vite logo" />
-        </div>
-        <div>
-          <h1>Get started</h1>
-          <p>
-            Edit <code>src/App.jsx</code> and save to test <code>HMR</code>
-          </p>
-        </div>
-        <button
-          className="counter"
-          onClick={() => setCount((count) => count + 1)}
-        >
-          Count is {count}
-        </button>
-      </section>
+    <Routes>
+      {/* Public Routes */}
+      <Route element={<PublicRoute />}>
+        <Route path="/login" element={<Login />} />
+        <Route path="/signup" element={<Signup />} />
+        <Route path="/forget-password" element={<ForgetPassword />} />
+      </Route>
 
-      <div className="ticks"></div>
+      {/* Protected Routes */}
+      <Route element={<ProtectedRoute />}>
+        <Route path="/" element={<Home />} />
 
-      <section id="next-steps">
-        <div id="docs">
-          <svg className="icon" role="presentation" aria-hidden="true">
-            <use href="/icons.svg#documentation-icon"></use>
-          </svg>
-          <h2>Documentation</h2>
-          <p>Your questions, answered</p>
-          <ul>
-            <li>
-              <a href="https://vite.dev/" target="_blank">
-                <img className="logo" src={viteLogo} alt="" />
-                Explore Vite
-              </a>
-            </li>
-            <li>
-              <a href="https://react.dev/" target="_blank">
-                <img className="button-icon" src={reactLogo} alt="" />
-                Learn more
-              </a>
-            </li>
-          </ul>
-        </div>
-        <div id="social">
-          <svg className="icon" role="presentation" aria-hidden="true">
-            <use href="/icons.svg#social-icon"></use>
-          </svg>
-          <h2>Connect with us</h2>
-          <p>Join the Vite community</p>
-          <ul>
-            <li>
-              <a href="https://github.com/vitejs/vite" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#github-icon"></use>
-                </svg>
-                GitHub
-              </a>
-            </li>
-            <li>
-              <a href="https://chat.vite.dev/" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#discord-icon"></use>
-                </svg>
-                Discord
-              </a>
-            </li>
-            <li>
-              <a href="https://x.com/vite_js" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#x-icon"></use>
-                </svg>
-                X.com
-              </a>
-            </li>
-            <li>
-              <a href="https://bsky.app/profile/vite.dev" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#bluesky-icon"></use>
-                </svg>
-                Bluesky
-              </a>
-            </li>
-          </ul>
-        </div>
-      </section>
+        {/* Owner Only Routes */}
+        <Route element={<OwnerRoute />}>
+          <Route element={<OwnerDashboard />}>
+            {/* Dashboard pages */}
+            <Route path="/dashboard/create-shop" element={<CreateShop />} />
+            <Route path="/dashboard/orders" element={<Orders />} />
+            <Route path="/dashboard/my-shops" element={<MyShops />} />
+            <Route path="/dashboard/shop/:shopId" element={<ShopDetails />} />
+            <Route path="/dashboard/order-history" element={<OrderHistory />} />
+            <Route path="/dashboard/help" element={<HelpCenter />} />
 
-      <div className="ticks"></div>
-      <section id="spacer"></section>
-    </>
-  )
-}
+            <Route path="/dashboard/edit-shop/:shopId" element={<EditShop />} />
+            <Route path="/dashboard/create-item" element={<CreateItem />} />
+            <Route path="/dashboard/edit-item/:itemId" element={<EditItem />} />
 
-export default App
+            {/* Default redirect */}
+            <Route
+              index
+              element={<Navigate to="/dashboard/my-shops" replace />}
+            />
+          </Route>
+        </Route>
+      </Route>
+    </Routes>
+  );
+};
+
+export default App;
