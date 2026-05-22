@@ -49,6 +49,9 @@ import RestaurantPage from "./pages/outlet/RestaurantPage";
 import CartPage from "./pages/cart/CartPage";
 import Profile from "./pages/outlet/Profile";
 
+// Favourites Page
+import Favourites from "./pages/outlet/Favourites";
+
 const App = () => {
   useGetCurrentUser();
   useGetCity();
@@ -81,6 +84,7 @@ const App = () => {
         <Route path="/profile" element={<Profile />} />
         <Route path="/my-orders" element={<UserOrders />} />
         <Route path="/order-history" element={<UserOrderHistory />} />
+        <Route path="/favourites" element={<Favourites />} />
 
         {/* Owner Only Routes */}
         <Route element={<OwnerRoute />}>

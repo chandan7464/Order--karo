@@ -6,6 +6,7 @@ import {
   FiSearch,
   FiShoppingCart,
   FiFileText,
+  FiHeart,
 } from "react-icons/fi";
 import { useDispatch, useSelector } from "react-redux";
 import axios from "axios";
@@ -96,10 +97,22 @@ const Nav = ({ onSearch }) => {
 
             <div className="relative flex items-center gap-2">
               <div
-                className="w-10 h-10 rounded-full bg-orange-600 text-white flex items-center justify-center font-bold text-lg cursor-pointer hover:bg-orange-700 transition"
+                className="w-12 h-12 rounded-full overflow-hidden bg-orange-600 text-white flex items-center justify-center font-bold text-lg cursor-pointer hover:bg-orange-700 transition ring-2 ring-orange-400"
                 onClick={() => setIsOpen((prev) => !prev)}
               >
-                {userData?.fullname?.[0]?.toUpperCase() || "U"}
+                {userData?.profilePic ? (
+                  <img
+                    src={userData.profilePic}
+                    alt="Profile"
+                    className="w-full h-full object-cover"
+                    onError={(e) => (e.target.style.display = "none")}
+                  />
+                ) : (
+                  userData?.fullname
+                    ?.split(" ")
+                    .map((n) => n[0])
+                    .join("")
+                )}
               </div>
 
               {isOpen && (
@@ -127,6 +140,15 @@ const Nav = ({ onSearch }) => {
                     className="flex items-center gap-3 px-3 py-2 rounded-xl text-gray-700 text-sm font-medium hover:bg-orange-50 hover:text-orange-600 transition-all duration-150 text-left w-full cursor-pointer"
                   >
                     <FiFileText className="text-base" /> Order History
+                  </button>
+                  <button
+                    onClick={() => {
+                      navigate("/favourites");
+                      setIsOpen(false);
+                    }}
+                    className="flex items-center gap-3 px-3 py-2 rounded-xl text-gray-700 text-sm font-medium hover:bg-orange-50 hover:text-orange-600 transition-all duration-150 text-left w-full cursor-pointer"
+                  >
+                    <FiHeart className="text-base" /> Favourites
                   </button>
                   <button
                     className="flex items-center justify-center gap-2 mt-1 w-full bg-orange-600 hover:bg-orange-700 text-white text-sm font-semibold py-2.5 rounded-xl transition-all duration-200 shadow-sm cursor-pointer"

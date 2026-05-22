@@ -40,6 +40,16 @@ const userSchema = new mongoose.Schema(
       type: String,
       trim: true,
     },
+    profilePic: {
+      type: String,
+      default: null,
+    },
+    favourites: [
+      {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "Shop",
+      },
+    ],
     otp: {
       type: String,
     },

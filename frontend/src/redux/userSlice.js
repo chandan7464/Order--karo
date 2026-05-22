@@ -9,6 +9,7 @@ const userSlice = createSlice({
     state: null,
     address: null,
     shopInMyCity: [],
+    favourites: [],
   },
   reducers: {
     setUserData: (state, action) => {
@@ -30,6 +31,18 @@ const userSlice = createSlice({
     setShopInMyCity: (state, action) => {
       state.shopInMyCity = action.payload;
     },
+    setFavourites: (state, action) => {
+      state.favourites = action.payload;
+    },
+    toggleFavouriteLocal: (state, action) => {
+      const shopId = action.payload.toString();
+      const index = state.favourites.indexOf(shopId);
+      if (index === -1) {
+        state.favourites.push(shopId);
+      } else {
+        state.favourites.splice(index, 1);
+      }
+    },
   },
 });
 
@@ -40,5 +53,7 @@ export const {
   setState,
   setShopInMyCity,
   setAddress,
+  setFavourites,
+  toggleFavouriteLocal,
 } = userSlice.actions;
 export default userSlice.reducer;

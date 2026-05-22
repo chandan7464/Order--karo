@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { useSelector } from "react-redux";
+import { useSelector, useDispatch } from "react-redux";
 import {
   FiStar,
   FiClock,
@@ -12,14 +12,19 @@ import {
 import { Link, useNavigate } from "react-router-dom";
 import Nav from "../components/Nav";
 import { selectTotalItems, selectTotalPrice } from "../redux/cartSlice";
+import { toggleFavouriteLocal } from "../redux/userSlice";
+import { serverUrl } from "../constants/constant";
+import axios from "axios";
 
 const UserDashboard = () => {
   const navigate = useNavigate();
+  const dispatch = useDispatch();
+  const favourites = useSelector((state) => state.user.favourites);
   const userData = useSelector((state) => state.user.userData);
   const restaurants = useSelector((state) => state.user.shopInMyCity);
   const loading = useSelector((state) => state.user.loading);
 
-  // Cart badge — dashboard pe bhi dikhega agar cart mein kuch hai
+ 
   const totalItems = useSelector(selectTotalItems);
   const totalPrice = useSelector(selectTotalPrice);
   const isUser = userData?.role === "user";
@@ -58,6 +63,21 @@ const UserDashboard = () => {
       });
     }
     setFilteredRestaurants(filtered);
+  };
+
+  const handleToggleFavourite = async (e, shopId) => {
+    e.preventDefault();
+    e.stopPropagation();
+    dispatch(toggleFavouriteLocal(shopId));
+    try {
+      await axios.patch(
+        `${serverUrl}/api/favourite/toggle/${shopId}`,
+        {},
+        { withCredentials: true },
+      );
+    } catch {
+      dispatch(toggleFavouriteLocal(shopId)); // revert on error
+    }
   };
 
   return (
@@ -132,9 +152,15 @@ const UserDashboard = () => {
                     />
                     <button
                       className="absolute top-2 right-2 p-1.5 bg-white rounded-full shadow-md hover:bg-red-50 transition"
-                      onClick={(e) => e.preventDefault()}
+                      onClick={(e) => handleToggleFavourite(e, restaurant._id)}
                     >
-                      <FiHeart className="text-gray-500 hover:text-red-500" />
+                      <FiHeart
+                        className={
+                          favourites.includes(restaurant._id)
+                            ? "fill-red-500 text-red-500"
+                            : "text-gray-500 hover:text-red-500"
+                        }
+                      />
                     </button>
                     {isClosed && (
                       <span className="absolute bottom-2 left-2 text-white text-xs font-bold px-3 py-1 bg-red-600 rounded-full">

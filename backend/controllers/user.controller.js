@@ -1,4 +1,5 @@
 import User from "../model/user.model.js";
+import uploadOnCloudinary from "../utils/cloudinary.js";
 
 export const getCurrentUser = async (req, res) => {
   try {
@@ -38,12 +39,26 @@ export const updateProfile = async (req, res) => {
 };
 
 export const uploadProfilePic = async (req, res) => {
-  const imageUrl = req.file.path; // cloudinary ya local path
-  const userId = req?.user?.id;
-  const user = await User.findByIdAndUpdate(
-    userId,
-    { profilePic: imageUrl },
-    { new: true },
-  ).select("-password");
-  res.json({ user });
+  try {
+    if (!req.file) {
+      return res.status(400).json({ message: "No file uploaded" });
+    }
+
+    const imageUrl = await uploadOnCloudinary(req.file.path);
+
+    if (!imageUrl) {
+      return res.status(500).json({ message: "Cloudinary upload failed" });
+    }
+
+    const userId = req?.user?.id;
+    const user = await User.findByIdAndUpdate(
+      userId,
+      { profilePic: imageUrl },
+      { new: true }
+    ).select("-password");
+
+    res.json({ user });
+  } catch (error) {
+    res.status(500).json({ message: "Upload error", error });
+  }
 };

@@ -15,6 +15,7 @@ import {
   FiShoppingBag,
   FiFileText,
   FiHeart,
+  FiShoppingCart
 } from "react-icons/fi";
 import { setUserData } from "../../redux/userSlice";
 import { serverUrl } from "../../constants/constant";
@@ -301,9 +302,11 @@ const Profile = () => {
               Quick Actions
             </h3>
           </div>
+
+           {/* Order History button */}
           <button
             type="button"
-            onClick={() => navigate("/my-orders")}
+            onClick={() => navigate("/order-history")}
             className="w-full flex items-center gap-3 px-5 py-4 hover:bg-orange-50 transition hover:cursor-pointer text-left"
           >
             <div className="w-8 h-8 rounded-full bg-orange-50 flex items-center justify-center">
@@ -316,6 +319,8 @@ const Profile = () => {
               <p className="text-xs text-gray-400">View your order history</p>
             </div>
           </button>
+
+          {/* Current Order button */}
           <button
             type="button"
             onClick={() => navigate("/my-orders")}
@@ -331,22 +336,26 @@ const Profile = () => {
               <p className="text-xs text-gray-400">View your Current order</p>
             </div>
           </button>
+
+         {/* Cart Page */}
           <button
             type="button"
-            onClick={() => navigate("/my-orders")}
+            onClick={() => navigate("/cart")}
             className="w-full flex items-center gap-3 px-5 py-4 hover:bg-orange-50 transition hover:cursor-pointer text-left"
           >
             <div className="w-8 h-8 rounded-full bg-orange-50 flex items-center justify-center">
-              <FiShoppingBag size={14} className="text-orange-500" />
+              <FiShoppingCart size={14} className="text-orange-500" />
             </div>
             <div>
-              <p className="text-sm font-semibold text-gray-800">My Orders</p>
-              <p className="text-xs text-gray-400">View your order history</p>
+              <p className="text-sm font-semibold text-gray-800">Cart</p>
+              <p className="text-xs text-gray-400">View your Cart</p>
             </div>
           </button>
+
+          {/* Favourites button */}
           <button
             type="button"
-            onClick={() => navigate("/my-orders")}
+            onClick={() => navigate("/favourites")}
             className="w-full flex items-center gap-3 px-5 py-4 hover:bg-orange-50 transition hover:cursor-pointer text-left"
           >
             <div className="w-8 h-8 rounded-full bg-orange-50 flex items-center justify-center">
