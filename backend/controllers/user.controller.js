@@ -17,3 +17,33 @@ export const getCurrentUser = async (req, res) => {
     return res.status(500).json({ message: "Get Current User error", error });
   }
 };
+
+export const updateProfile = async (req, res) => {
+  const { fullname, mobile, address } = req.body;
+  const userId = req?.user?.id;
+  const updateData = {};
+
+  if (fullname !== undefined) updateData.fullname = fullname;
+  if (mobile !== undefined) updateData.mobile = mobile;
+  if (address !== undefined) updateData.address = address;
+
+  if (Object.keys(updateData).length === 0) {
+    return res.status(400).json({ message: "Nothing to update" });
+  }
+
+  const user = await User.findByIdAndUpdate(userId, updateData, {
+    new: true,
+  }).select("-password");
+  res.json({ user });
+};
+
+export const uploadProfilePic = async (req, res) => {
+  const imageUrl = req.file.path; // cloudinary ya local path
+  const userId = req?.user?.id;
+  const user = await User.findByIdAndUpdate(
+    userId,
+    { profilePic: imageUrl },
+    { new: true },
+  ).select("-password");
+  res.json({ user });
+};

@@ -2,7 +2,7 @@ import { useEffect } from "react";
 import axios from "axios";
 import { serverUrl } from "../constants/constant";
 import { useDispatch } from "react-redux";
-import { setUserData, setLoading } from "../redux/userSlice"; // ← fixed name
+import { setUserData, setLoading } from "../redux/userSlice";
 
 const useGetCurrentUser = () => {
   const dispatch = useDispatch();
@@ -13,16 +13,16 @@ const useGetCurrentUser = () => {
         const { data } = await axios.get(`${serverUrl}/api/user/current`, {
           withCredentials: true,
         });
-        console.log("data:", data);
         dispatch(setUserData(data));
       } catch (error) {
-        dispatch(setUserData(null));  // ← fixed brackets
-        dispatch(setLoading(false));  // ← fixed name
+        // console.log(error.response.data)
+        dispatch(setUserData(null));
+        dispatch(setLoading(false)); // error pe bhi loading false karo
       }
     };
 
-    getCurrentUser(); // ← was missing, hook never actually ran
-  }, []); // ← was missing
+    getCurrentUser();
+  }, []);
 };
 
 export default useGetCurrentUser;

@@ -3,6 +3,15 @@ import { useSelector } from "react-redux";
 import { FiPlus, FiSearch } from "react-icons/fi";
 import { BsForkKnife } from "react-icons/bs";
 
+// FIX: formatTime yahan bhi use karo, "23:00 am" wala bug khatam
+const formatTime = (time) => {
+  const [hour, minute] = time.split(":");
+  const h = parseInt(hour);
+  const ampm = h >= 12 ? "PM" : "AM";
+  const displayHour = h % 12 || 12;
+  return `${displayHour}:${minute} ${ampm}`;
+};
+
 const MyShops = () => {
   const navigate = useNavigate();
   const shopData = useSelector((state) => state.shop.shopData);
@@ -31,7 +40,6 @@ const MyShops = () => {
       </header>
 
       <div className="max-w-6xl mx-auto px-6 pt-8 pb-12">
-        {/* Header */}
         <div className="flex justify-between items-center mb-14">
           <div>
             <h1 className="text-4xl font-bold text-orange-600 mb-2">
@@ -51,7 +59,6 @@ const MyShops = () => {
           </button>
         </div>
 
-        {/* Empty State */}
         {shopData.length === 0 ? (
           <div className="max-w-md mx-auto h-80 rounded-lg bg-white shadow-lg p-12 text-center">
             <div className="mb-6">
@@ -74,7 +81,6 @@ const MyShops = () => {
             {shopData.map((shop) => (
               <Link key={shop._id} to={`/dashboard/shop/${shop._id}`}>
                 <div className="bg-white h-80 rounded-lg shadow-lg overflow-hidden hover:shadow-xl transition-all duration-300">
-                  {/* Shop Image */}
                   <div className="relative h-48 overflow-hidden bg-gray-200">
                     <img
                       src={shop.image}
@@ -82,7 +88,6 @@ const MyShops = () => {
                       onError={(e) => (e.target.src = "/placeholder.png")}
                       className="w-full h-full object-cover hover:scale-110 transition-transform duration-300"
                     />
-                    {/* Open/Closed badge on image */}
                     <span
                       className={`absolute top-3 left-3 text-xs font-bold px-3 py-1 rounded-full ${
                         shop.isOpen
@@ -94,15 +99,15 @@ const MyShops = () => {
                     </span>
                   </div>
 
-                  {/* Shop Info */}
                   <div className="p-4">
                     <h2 className="text-xl font-bold text-gray-800 mb-1">
                       {shop.name}
                     </h2>
                     <p className="text-gray-500 text-sm mb-1">{shop.address}</p>
+                    {/* FIX: formatTime use karo, hardcoded "am" hatao */}
                     {shop.openTime && shop.closeTime && (
-                      <p className="text-gray-400 text-xs">
-                        {shop.openTime} - {shop.closeTime}
+                      <p className="text-red-700 font-semibold text-xs">
+                        Opens at {formatTime(shop.openTime)}
                       </p>
                     )}
                   </div>

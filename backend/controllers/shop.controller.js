@@ -4,7 +4,8 @@ import Item from "../model/item.model.js";
 
 export const createShop = async (req, res) => {
   try {
-    const { name, city, state, address } = req.body;
+    // FIX: openTime aur closeTime add kiya
+    const { name, city, state, address, openTime, closeTime } = req.body;
     const userId = req?.user?.id;
     let image;
     if (req.file) {
@@ -27,6 +28,9 @@ export const createShop = async (req, res) => {
       address,
       image,
       owner: userId,
+      // FIX: openTime aur closeTime save ho rahe hain
+      openTime: openTime || "11:00",
+      closeTime: closeTime || "23:00",
     });
     await shop.populate("owner");
 
@@ -70,6 +74,7 @@ export const editShop = async (req, res) => {
   }
 };
 
+// For Single Shop
 export const getMyShops = async (req, res) => {
   try {
     const userId = req?.user?.id;
@@ -83,6 +88,19 @@ export const getMyShops = async (req, res) => {
     return res.status(200).json({ shops });
   } catch (error) {
     return res.status(500).json({ message: "Get my shops error", error });
+  }
+};
+
+
+// For Multiple Shops
+export const getAllShops = async (req, res) => {
+  try {
+    const shops = await Shop.find({})
+      .populate("owner", "name email")
+      .populate("items");
+    return res.status(200).json({shops});
+  } catch (error) {
+    return res.status(500).json({ message: "Get all shops error", error });
   }
 };
 
@@ -115,7 +133,6 @@ export const toggleShopStatus = async (req, res) => {
       });
     }
 
-    // First find the shop
     const shop = await Shop.findOne({ _id: shopId, owner: userId });
 
     if (!shop) {
@@ -124,7 +141,6 @@ export const toggleShopStatus = async (req, res) => {
       });
     }
 
-    // Toggle manually (much safer)
     shop.isOpen = !shop.isOpen;
     await shop.save();
 
@@ -134,7 +150,7 @@ export const toggleShopStatus = async (req, res) => {
       shopId: shop._id,
     });
   } catch (error) {
-    console.error("Toggle shop status error:", error); // This will now show real error
+    console.error("Toggle shop status error:", error);
     return res.status(500).json({
       message: "Internal server error while toggling shop status",
       error: process.env.NODE_ENV === "development" ? error.message : undefined,

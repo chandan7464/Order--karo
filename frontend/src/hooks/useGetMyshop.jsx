@@ -9,17 +9,18 @@ const useGetMyShop = () => {
   const userData = useSelector((state) => state.user.userData);
 
   useEffect(() => {
-    if (!userData) return; // guard
+    // FIX: sirf owner ke liye run karo
+    if (!userData || userData.role !== "owner") return;
 
     const fetchShops = async () => {
       try {
         const { data } = await axios.get(`${serverUrl}/api/shop/get-my-shop`, {
           withCredentials: true,
         });
-        console.log("data:", data);
         dispatch(setShopData(data?.shops));
       } catch (error) {
-        console.log("fetch shop error:", error.response.data);
+        // FIX: error.response undefined ho sakta hai, crash rokha
+        console.log("fetch shop error:", error.response?.data);
       }
     };
 

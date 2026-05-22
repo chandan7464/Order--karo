@@ -12,7 +12,7 @@ import { addItemToShop } from "../../redux/shopSlice";
 
 const CreateItem = () => {
   const navigate = useNavigate();
-  const dispatch = useDispatch()
+  const dispatch = useDispatch();
   const [searchParams] = useSearchParams();
   const preselectedShopId = searchParams.get("shopId");
 
@@ -215,7 +215,7 @@ const CreateItem = () => {
               placeholder="Enter price"
               min="0"
               step="0.01"
-              className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg text-sm focus:outline-none focus:border-orange-600 focus:ring-2 focus:ring-orange-200 transition-all duration-300"
+              className="[&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none appearance-none w-full px-4 py-3 border-2 border-gray-300 rounded-lg text-sm focus:outline-none focus:border-orange-600 focus:ring-2 focus:ring-orange-200 transition-all duration-300"
             />
           </div>
 
@@ -297,7 +297,7 @@ const CreateItem = () => {
           <button
             type="submit"
             disabled={loading}
-            className="w-full py-3 px-4 bg-orange-600 text-white font-bold rounded-lg hover:bg-orange-700 transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed"
+            className="w-full py-3 px-4 bg-orange-600 text-white font-bold rounded-lg hover:bg-orange-700 hover:cursor-pointer transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed"
           >
             {loading ? "Creating Item..." : "Create Item"}
           </button>
@@ -306,7 +306,7 @@ const CreateItem = () => {
           <button
             type="button"
             onClick={() => navigate(`/dashboard/shop/${formData.shopId}`)}
-            className="w-full py-2 px-4 bg-gray-300 text-gray-800 font-semibold rounded-lg hover:bg-gray-400 transition-all duration-300"
+            className="w-full py-2 px-4 bg-gray-300 text-gray-800 font-semibold rounded-lg hover:bg-gray-400 hover:cursor-pointer transition-all duration-300"
           >
             Cancel
           </button>

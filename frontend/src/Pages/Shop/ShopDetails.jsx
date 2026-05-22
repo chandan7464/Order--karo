@@ -17,7 +17,7 @@ import {
   FiClock,
 } from "react-icons/fi";
 
-// "11:00" -> "11:00 AM" , "23:00" -> "11:00 PM"
+// "11:00" -> "11:00 AM", "23:00" -> "11:00 PM"
 const formatTime = (time) => {
   const [hour, minute] = time.split(":");
   const h = parseInt(hour);
@@ -52,7 +52,7 @@ const ShopDetails = () => {
     );
   }
 
-  // Shop Open/Close Toggle
+  // Toggle = owner force open/close override
   const handleToggleStatus = async () => {
     dispatch(updateShop({ _id: shopId, isOpen: !shop.isOpen }));
     try {
@@ -62,7 +62,7 @@ const ShopDetails = () => {
         {},
         { withCredentials: true },
       );
-      dispatch(updateShop({ _id: shopId, isOpen: data.isOpen }));
+      dispatch(updateShop({ _id: shopId, isOpen: data?.isOpen }));
     } catch (err) {
       dispatch(updateShop({ _id: shopId, isOpen: shop.isOpen }));
       setError(err.response?.data?.message || "Status toggle failed");
@@ -71,7 +71,6 @@ const ShopDetails = () => {
     }
   };
 
-  // Shop Delete
   const handleDeleteShop = async () => {
     const confirmed = confirm(
       `"${shop.name}" Are you sure you want to delete this shop ?`,
@@ -92,7 +91,6 @@ const ShopDetails = () => {
     }
   };
 
-  // Item Delete
   const handleItemDelete = async (itemId) => {
     const confirmed = confirm("Are you sure you want to delete this item?");
     if (!confirmed) return;
@@ -121,20 +119,23 @@ const ShopDetails = () => {
         </button>
 
         <div className="flex items-center gap-3">
-          {/* Toggle Open/Closed */}
+          {/* Toggle - owner force override */}
           <button
             onClick={handleToggleStatus}
             disabled={toggleLoading}
-            className={`flex items-center gap-2 px-4 py-2 font-bold rounded-lg transition disabled:opacity-50 disabled:cursor-not-allowed ${
+            className={`flex items-center gap-2 px-4 py-2 font-bold rounded-lg transition hover:cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed ${
               shop.isOpen
-                ? "bg-green-500 hover:bg-green-600 text-white"
-                : "bg-gray-400 hover:bg-gray-500 text-white"
+                ? "bg-gray-400 hover:bg-gray-500 text-white"
+                : "bg-green-600 hover:bg-green-700 text-white"
             }`}
           >
-            {toggleLoading ? "Updating..." : shop.isOpen ? "Open" : "Closed"}
+            {toggleLoading
+              ? "Updating..."
+              : shop.isOpen
+                ? "Close Shop"
+                : "Open Shop"}
           </button>
 
-          {/* Edit Shop */}
           <button
             onClick={() => navigate(`/dashboard/edit-shop/${shopId}`)}
             className="flex items-center gap-2 px-4 py-2 border-2 border-orange-600 text-orange-600 font-bold rounded-lg hover:cursor-pointer hover:bg-orange-50 transition"
@@ -143,7 +144,6 @@ const ShopDetails = () => {
             Edit Shop
           </button>
 
-          {/* Delete Shop */}
           <button
             onClick={handleDeleteShop}
             disabled={deleteLoading}
@@ -175,23 +175,25 @@ const ShopDetails = () => {
           <div className="p-6">
             <div className="flex items-center gap-3 mb-2">
               <h1 className="text-3xl font-bold text-gray-800">{shop.name}</h1>
-              <span
-                className={`text-xs font-bold px-3 py-1 rounded-full ${
-                  shop.isOpen
-                    ? "bg-green-100 text-green-700"
-                    : "bg-gray-200 text-gray-500"
-                }`}
-              >
-                {shop.isOpen ? "Open" : "Closed"}
-              </span>
+              {/* Show force closed warning if owner manually closed */}
+              {shop.isOpen ? (
+                <span className="text-xs font-bold px-3 py-1 rounded-full bg-green-500 text-white">
+                  Open
+                </span>
+              ) : (
+                <span className="text-xs font-bold px-3 py-1 rounded-full bg-red-100 text-red-600">
+                  Closed
+                </span>
+              )}
             </div>
 
             <div className="flex items-start gap-2 text-gray-500 text-sm mt-1">
               <FiMapPin className="mt-0.5 shrink-0 text-orange-600" />
-              <span>{shop.address}, {shop.state}</span>
+              <span>
+                {shop.address}, {shop.state}
+              </span>
             </div>
 
-            {/* Timing */}
             {shop.openTime && shop.closeTime && (
               <div className="flex items-center gap-2 text-gray-500 text-sm mt-2">
                 <FiClock className="shrink-0 text-orange-600" />
@@ -225,7 +227,9 @@ const ShopDetails = () => {
               This shop has no items yet.
             </p>
             <button
-              onClick={() => navigate(`/dashboard/create-item?shopId=${shopId}`)}
+              onClick={() =>
+                navigate(`/dashboard/create-item?shopId=${shopId}`)
+              }
               className="py-2 px-6 bg-orange-600 text-white font-bold rounded-lg hover:bg-orange-700 hover:cursor-pointer transition"
             >
               Add Your First Item
@@ -265,12 +269,13 @@ const ShopDetails = () => {
 
                   <div className="self-center flex flex-col gap-3">
                     <button
-                      onClick={() => navigate(`/dashboard/edit-item/${item._id}`)}
+                      onClick={() =>
+                        navigate(`/dashboard/edit-item/${item._id}`)
+                      }
                       className="w-12 h-12 flex items-center justify-center py-2 border border-orange-600 text-orange-600 text-sm font-bold rounded-full hover:cursor-pointer hover:bg-orange-50 transition mt-2"
                     >
                       <FiEdit2 size={16} />
                     </button>
-
                     <button
                       onClick={() => handleItemDelete(item._id)}
                       className="w-12 h-12 flex items-center justify-center py-2 border border-red-500 text-red-500 text-sm font-bold rounded-full hover:cursor-pointer hover:bg-red-50 transition mt-2"

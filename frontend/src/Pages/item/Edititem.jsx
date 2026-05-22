@@ -1,135 +1,102 @@
-import React, { useState, useEffect } from "react";
+import { useState } from "react";
 import axios from "axios";
 import { useNavigate, useParams } from "react-router-dom";
-import { useSelector } from "react-redux";
-import { serverUrl } from "../../constants/constant";
+import { useSelector, useDispatch } from "react-redux";
+import {
+  serverUrl,
+  ITEM_CATEGORIES,
+  FOOD_TYPES,
+} from "../../constants/constant";
 import { FiUpload } from "react-icons/fi";
-import { MdDelete } from "react-icons/md";
-
-const ITEM_CATEGORIES = [
-  "snacks",
-  "Main Course",
-  "Desserts",
-  "Pizza",
-  "Burgers",
-  "Sandwiches",
-  "South Indian",
-  "Chinese",
-  "Fast Food",
-  "Others",
-];
-
-const FOOD_TYPES = ["veg", "non veg"];
+import { updateItemInShop } from "../../redux/shopSlice";
 
 const EditItem = () => {
   const navigate = useNavigate();
+  const dispatch = useDispatch();
   const { itemId } = useParams();
-  const currentUser = useSelector((state) => state.user.userData);
-  const [formData, setFormData] = useState({
-    name: "",
-    category: "snacks",
-    foodType: "veg",
-    price: "",
-    image: null,
-    currentImage: "",
-  });
-  const [imagePreview, setImagePreview] = useState(null);
-  const [loading, setLoading] = useState(false);
-  const [pageLoading, setPageLoading] = useState(true);
-  const [error, setError] = useState("");
-  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
-  const [deleteLoading, setDeleteLoading] = useState(false);
-  const [isOwner, setIsOwner] = useState(false);
 
-  useEffect(() => {
-    const fetchItem = async () => {
-      try {
-        // Get all shops and their items to find the current item
-        const { data } = await axios.get(`${serverUrl}/api/shop/get-my-shop`, {
-          withCredentials: true,
-        });
+  const shopData = useSelector((state) => state.shop.shopData);
 
-        let foundItem = null;
-        let shopOwner = null;
-        for (const shop of data.shops) {
-          if (shop.items) {
-            foundItem = shop.items.find((item) => item._id === itemId);
-            if (foundItem) {
-              shopOwner = shop.owner._id;
-              break;
-            }
-          }
-        }
+  // From Redux Store
+  let foundItem = null;
+  let foundShopId = null;
 
-        if (foundItem) {
-          // Check if current user is the shop owner
-          if (currentUser?._id !== shopOwner) {
-            setError("❌ You are not authorized to edit this item");
-            setIsOwner(false);
-          } else {
-            setIsOwner(true);
-            setFormData({
-              name: foundItem.name,
-              category: foundItem.category,
-              foodType: foundItem.foodType,
-              price: foundItem.price,
-              image: null,
-              currentImage: foundItem.image,
-            });
-            setImagePreview(foundItem.image);
-          }
-        } else {
-          setError("Item not found");
-        }
-      } catch (err) {
-        setError("Error fetching item details");
-        console.error(err);
-      } finally {
-        setPageLoading(false);
+  if (shopData) {
+    for (const shop of shopData) {
+      const item = shop.items?.find((i) => i._id === itemId);
+      if (item) {
+        foundItem = item;
+        foundShopId = shop._id;
+        break;
       }
-    };
+    }
+  }
 
-    fetchItem();
-  }, [itemId, currentUser]);
+  const [formData, setFormData] = useState({
+    name: foundItem?.name || "",
+    category: foundItem?.category || "snacks",
+    foodType: foundItem?.foodType || "veg",
+    price: foundItem?.price || "",
+    description: foundItem?.description || "",
+    image: null,
+  });
+
+  const [imagePreview, setImagePreview] = useState(foundItem?.image || null);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
+
+  // if shop not found in redux
+  if (shopData === null) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-orange-50">
+        <p className="text-orange-600 text-xl font-bold">Loading...</p>
+      </div>
+    );
+  }
+
+  // if item not found in redux
+  if (!foundItem) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-orange-50 px-4">
+        <div className="bg-white rounded-lg shadow-lg p-8 text-center">
+          <p className="text-xl font-bold text-gray-800 mb-4">Item not found</p>
+          <button
+            onClick={() => navigate("/dashboard/my-shops")}
+            className="py-3 px-6 bg-orange-600 text-white font-bold rounded-lg hover:bg-orange-700 transition-all"
+          >
+            Back to My Shops
+          </button>
+        </div>
+      </div>
+    );
+  }
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
-    setFormData((prev) => ({
-      ...prev,
-      [name]: value,
-    }));
+    setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
   const handleImageChange = (e) => {
     const file = e.target.files[0];
-    if (file) {
-      setFormData((prev) => ({
-        ...prev,
-        image: file,
-      }));
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        setImagePreview(reader.result);
-      };
-      reader.readAsDataURL(file);
-    }
+    if (!file) return;
+    setFormData((prev) => ({ ...prev, image: file }));
+    const reader = new FileReader();
+    reader.onloadend = () => setImagePreview(reader.result);
+    reader.readAsDataURL(file);
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError("");
 
-    if (
-      !formData.name ||
-      !formData.category ||
-      !formData.foodType ||
-      !formData.price
-    ) {
-      setError("All text fields are required");
+    const { name, category, foodType, price, description } = formData;
+
+    if (!name || !category || !foodType || !price || !description) {
+      setError("All fields are required");
       return;
     }
 
-    if (isNaN(formData.price) || parseFloat(formData.price) < 0) {
+    if (isNaN(price) || parseFloat(price) < 0) {
       setError("Price must be a valid positive number");
       return;
     }
@@ -137,10 +104,11 @@ const EditItem = () => {
     try {
       setLoading(true);
       const form = new FormData();
-      form.append("name", formData.name);
-      form.append("category", formData.category);
-      form.append("foodType", formData.foodType);
-      form.append("price", formData.price);
+      form.append("name", name);
+      form.append("category", category);
+      form.append("foodType", foodType);
+      form.append("price", price);
+      form.append("description", description);
       if (formData.image) {
         form.append("image", formData.image);
       }
@@ -150,74 +118,22 @@ const EditItem = () => {
         form,
         {
           withCredentials: true,
-          headers: {
-            "Content-Type": "multipart/form-data",
-          },
+          headers: { "Content-Type": "multipart/form-data" },
         },
       );
 
+      dispatch(
+        updateItemInShop({ shopId: foundShopId, updatedItem: data.item }),
+      );
       alert(data.message);
-      navigate("/my-shops");
-    } catch (error) {
-      setError(error.response?.data?.message || "Error updating item");
-      console.error("Edit Item Error:", error);
+      navigate(`/dashboard/shop/${foundShopId}`);
+    } catch (err) {
+      setError(err.response?.data?.message || "Error updating item");
+      console.error("Edit Item Error:", err);
     } finally {
       setLoading(false);
     }
   };
-
-  const handleDelete = async () => {
-    try {
-      setDeleteLoading(true);
-      const { data } = await axios.delete(
-        `${serverUrl}/api/item/remove-item/${itemId}`,
-        {
-          withCredentials: true,
-        },
-      );
-
-      alert(data.message);
-      navigate("/my-shops");
-    } catch (error) {
-      setError(error.response?.data?.message || "Error deleting item");
-      console.error("Delete Item Error:", error);
-    } finally {
-      setDeleteLoading(false);
-      setShowDeleteConfirm(false);
-    }
-  };
-
-  if (pageLoading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-orange-50">
-        <p className="text-orange-600 text-xl font-bold">
-          Loading item details...
-        </p>
-      </div>
-    );
-  }
-
-  if (!isOwner) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-orange-50 px-4">
-        <div className="bg-white rounded-lg shadow-lg p-8 text-center max-w-md">
-          <p className="text-2xl font-bold text-red-600 mb-3">
-            ❌ Access Denied
-          </p>
-          <p className="text-gray-600 font-semibold mb-6">
-            You don't have permission to edit this item. Only the shop owner can
-            edit it.
-          </p>
-          <button
-            onClick={() => navigate("/my-shops")}
-            className="py-3 px-8 bg-orange-600 text-white font-bold rounded-lg hover:bg-orange-700 transition-all"
-          >
-            Back to My Shops
-          </button>
-        </div>
-      </div>
-    );
-  }
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-orange-50 px-4 py-6">
@@ -283,7 +199,22 @@ const EditItem = () => {
               placeholder="Enter price"
               min="0"
               step="0.01"
-              className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg text-sm focus:outline-none focus:border-orange-600 focus:ring-2 focus:ring-orange-200 transition-all duration-300"
+              className="[&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none appearance-none w-full px-4 py-3 border-2 border-gray-300 rounded-lg text-sm focus:outline-none focus:border-orange-600 focus:ring-2 focus:ring-orange-200 transition-all duration-300"
+            />
+          </div>
+
+          {/* Description */}
+          <div>
+            <label className="block text-sm font-semibold text-gray-800 mb-2">
+              Description <sup className="text-orange-600">*</sup>
+            </label>
+            <textarea
+              name="description"
+              value={formData.description}
+              onChange={handleInputChange}
+              placeholder="Enter item description"
+              rows={3}
+              className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg text-sm focus:outline-none focus:border-orange-600 focus:ring-2 focus:ring-orange-200 transition-all duration-300 resize-none"
             />
           </div>
 
@@ -298,10 +229,7 @@ const EditItem = () => {
                   key={type}
                   type="button"
                   onClick={() =>
-                    setFormData((prev) => ({
-                      ...prev,
-                      foodType: type,
-                    }))
+                    setFormData((prev) => ({ ...prev, foodType: type }))
                   }
                   className={`py-2 px-3 rounded-lg font-semibold text-sm transition-all duration-300 cursor-pointer ${
                     formData.foodType === type
@@ -319,91 +247,57 @@ const EditItem = () => {
           {/* Image Upload */}
           <div>
             <label className="block text-sm font-semibold text-gray-800 mb-2">
-              Item Image (Optional - Leave empty to keep current)
+              Item Image{" "}
+              <span className="text-gray-400 font-normal">
+                (leave empty to keep current)
+              </span>
             </label>
-            <div className="relative">
-              <input
-                type="file"
-                accept="image/*"
-                onChange={handleImageChange}
-                className="hidden"
-                id="item-image"
-              />
-              <label
-                htmlFor="item-image"
-                className="cursor-pointer flex items-center justify-center gap-2 w-full px-4 py-4 border-2 border-dashed border-orange-300 rounded-lg bg-orange-50 hover:bg-orange-100 transition-all duration-300"
-              >
-                <FiUpload className="text-orange-600 text-lg" />
-                <span className="text-orange-600 font-semibold">
-                  {formData.image ? "Change Image" : "Upload New Image"}
-                </span>
-              </label>
-            </div>
+            <input
+              type="file"
+              accept="image/*"
+              onChange={handleImageChange}
+              className="hidden"
+              id="item-image"
+            />
+            <label
+              htmlFor="item-image"
+              className="cursor-pointer flex items-center justify-center gap-2 w-full px-4 py-4 border-2 border-dashed border-orange-300 rounded-lg bg-orange-50 hover:bg-orange-100 transition-all duration-300"
+            >
+              <FiUpload className="text-orange-600 text-lg" />
+              <span className="text-orange-600 font-semibold">
+                {formData.image ? "Change Image" : "Upload New Image"}
+              </span>
+            </label>
             {imagePreview && (
-              <div className="mt-3 relative">
+              <div className="mt-3">
                 <img
                   src={imagePreview}
                   alt="Preview"
                   className="w-full h-48 object-cover rounded-lg"
                 />
                 <p className="text-xs text-gray-500 mt-1">
-                  {formData.image ? "New image selected" : "Current item image"}
+                  {formData.image ? "New image selected" : "Current image"}
                 </p>
               </div>
             )}
           </div>
 
-          {/* Update Button */}
+          {/* Submit */}
           <button
             type="submit"
             disabled={loading}
-            className="w-full py-3 px-4 bg-orange-600 text-white font-bold rounded-lg hover:bg-orange-700 transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed"
+            className="w-full py-3 px-4 bg-orange-600 text-white font-bold rounded-lg hover:bg-orange-700 hover:cursor-pointer transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed"
           >
             {loading ? "Updating Item..." : "Update Item"}
           </button>
 
-          {/* Delete Button */}
-          {!showDeleteConfirm ? (
-            <button
-              type="button"
-              onClick={() => setShowDeleteConfirm(true)}
-              className="w-full py-3 px-4 bg-red-600 text-white font-bold rounded-lg hover:bg-red-700 transition-all duration-300 flex items-center justify-center gap-2"
-            >
-              <MdDelete className="text-lg" />
-              Delete Item
-            </button>
-          ) : (
-            <div className="p-4 bg-red-50 border-2 border-red-300 rounded-lg">
-              <p className="text-red-800 font-semibold mb-3">
-                Are you sure? This cannot be undone.
-              </p>
-              <div className="grid grid-cols-2 gap-2">
-                <button
-                  type="button"
-                  onClick={handleDelete}
-                  disabled={deleteLoading}
-                  className="py-2 px-3 bg-red-600 text-white font-bold rounded hover:bg-red-700 transition-all disabled:opacity-50"
-                >
-                  {deleteLoading ? "Deleting..." : "Yes, Delete"}
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setShowDeleteConfirm(false)}
-                  className="py-2 px-3 bg-gray-400 text-white font-bold rounded hover:bg-gray-500 transition-all"
-                >
-                  Cancel
-                </button>
-              </div>
-            </div>
-          )}
-
-          {/* Back Button */}
+          {/* Cancel */}
           <button
             type="button"
-            onClick={() => navigate("/my-shops")}
-            className="w-full py-2 px-4 bg-gray-300 text-gray-800 font-semibold rounded-lg hover:bg-gray-400 transition-all duration-300"
+            onClick={() => navigate(`/dashboard/shop/${foundShopId}`)}
+            className="w-full py-2 px-4 bg-gray-300 text-gray-800 font-semibold rounded-lg hover:bg-gray-400 hover:cursor-pointer transition-all duration-300"
           >
-            Back
+            Cancel
           </button>
         </form>
       </div>

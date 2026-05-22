@@ -3,12 +3,12 @@ import { Routes, Route, Navigate } from "react-router-dom";
 import { useSelector } from "react-redux";
 
 // Auth Pages
-import Signup from "./pages/Signup";
-import Login from "./pages/Login";
-import ForgetPassword from "./pages/ForgetPassword";
+import Signup from "./pages/auth/Signup";
+import Login from "./pages/auth/Login";
+import ForgetPassword from "./pages/auth/ForgetPassword";
 
 // App Pages
-import Home from "./pages/Home";
+import Home from "./pages/auth/Home";
 
 // Shop Pages
 import MyShops from "./pages/shop/MyShops";
@@ -21,10 +21,10 @@ import CreateItem from "./pages/item/CreateItem";
 import EditItem from "./pages/item/EditItem";
 
 // Orders Page
-import Orders from "./pages/orders/Orders";
-
-// OrderHistory Page
-import OrderHistory from "./pages/orders/OrderHistory";
+import ShopOrders from "./pages/orders/ShopOrders";
+import ShopOrderHistory from "./pages/orders/ShopOrderHistory";
+import UserOrders from "./pages/orders/UserOrders";
+import UserOrderHistory from "./pages/orders/UserOrderHistory";
 
 // Outlet Page
 import HelpCenter from "./pages/outlet/HelpCenter";
@@ -40,11 +40,20 @@ import useGetCity from "./hooks/useGetCity";
 import useGetMyShop from "./hooks/useGetMyShop";
 
 import OwnerDashboard from "./components/OwnerDashboard";
+import useGetShopInMyCity from "./hooks/useGetShopInMyCity";
+
+// Restaurant Page
+import RestaurantPage from "./pages/outlet/RestaurantPage";
+
+// Cart Page
+import CartPage from "./pages/cart/CartPage";
+import Profile from "./pages/outlet/Profile";
 
 const App = () => {
   useGetCurrentUser();
   useGetCity();
   useGetMyShop();
+  useGetShopInMyCity();
   const loading = useSelector((state) => state.user.loading);
 
   if (loading) {
@@ -67,16 +76,24 @@ const App = () => {
       {/* Protected Routes */}
       <Route element={<ProtectedRoute />}>
         <Route path="/" element={<Home />} />
+        <Route path="/restaurant/:restaurantId" element={<RestaurantPage />} />
+        <Route path="/cart" element={<CartPage />} />
+        <Route path="/profile" element={<Profile />} />
+        <Route path="/my-orders" element={<UserOrders />} />
+        <Route path="/order-history" element={<UserOrderHistory />} />
 
         {/* Owner Only Routes */}
         <Route element={<OwnerRoute />}>
-          <Route element={<OwnerDashboard />}>
+          <Route path="/dashboard" element={<OwnerDashboard />}>
             {/* Dashboard pages */}
             <Route path="/dashboard/create-shop" element={<CreateShop />} />
-            <Route path="/dashboard/orders" element={<Orders />} />
+            <Route path="/dashboard/orders" element={<ShopOrders />} />
             <Route path="/dashboard/my-shops" element={<MyShops />} />
             <Route path="/dashboard/shop/:shopId" element={<ShopDetails />} />
-            <Route path="/dashboard/order-history" element={<OrderHistory />} />
+            <Route
+              path="/dashboard/order-history"
+              element={<ShopOrderHistory />}
+            />
             <Route path="/dashboard/help" element={<HelpCenter />} />
 
             <Route path="/dashboard/edit-shop/:shopId" element={<EditShop />} />
